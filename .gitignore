@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.idea/
+.ipynb_checkpoints/
+.venv/
+venv/
+RDA/tang/output/**/model/
+*.pkl
+!RDA/tang/data/sent_prior.pkl
+!RDA/tang/data/sent_prior2.pkl

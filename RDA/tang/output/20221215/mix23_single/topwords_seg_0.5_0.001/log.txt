@@ -1,0 +1,42 @@
+----------------------------------------------------------------------------------------------------
+2022-12-12	21:42:47	Welcome to use TopWORDS-Seg program developed by Changzai Pan (panpanaqm@126.com)
+----------------------------------------------------------------------------------------------------
+inputfile: /data/run01/scv7387/project/Poetry_Seg/RDA/tang/data/modify_text57.txt
+filedir: /data/run01/scv7387/project/Poetry_Seg/RDA/tang/output/20221212/mix23_single
+method_name: topwords_seg_0.5_0.001
+output_dir: /data/run01/scv7387/project/Poetry_Seg/RDA/tang/output/20221212/mix23_single/topwords_seg_0.5_0.001
+tau_l: 3
+tau_f: 2
+seg_thr: 0.5
+kappa_d: 0.5
+kappa_s: 0.001
+comp_value: {5: array([0.5, 0.5]), 7: array([0.5, 0.5])}
+prior_words_dir: None
+protected_prior_words_dir: /data/run01/scv7387/project/Poetry_Seg/RDA/tang/data/word_candidate.txt
+delete_words_dir: None
+sent_prior_dir: /data/run01/scv7387/project/Poetry_Seg/RDA/tang/data/sent_prior.pkl
+num_of_processes: 10
+2022-12-12	21:42:47	load text file
+2022-12-12	21:42:47	sent num: 221640
+2022-12-12	21:42:47	char num: 1309096
+2022-12-12	21:42:47	check result dir
+2022-12-12	21:42:49	load model /data/run01/scv7387/project/Poetry_Seg/RDA/tang/output/20221212/mix23_single/model/tw_0.5_3_2.pkl
+----------------------------------------------------------------------------------------------------
+2022-12-12	21:42:52	output word dictionary
+is_compute_posterior: True
+is_compute_score: True
+----------------------------------------------------------------------------------------------------
+2022-12-12	21:42:52	compute posterior
+2022-12-12	21:43:19	compute posterior, DONE!
+2022-12-12	21:43:19	compute significance score
+2022-12-12	21:44:32	compute significance score, DONE!
+2022-12-12	21:44:33	output word dictionary, DONE!
+----------------------------------------------------------------------------------------------------
+2022-12-12	21:44:34	set prior in sentences (3/4)
+2022-12-12	21:44:35	set prior in sentences (3/4), DONE!
+----------------------------------------------------------------------------------------------------
+2022-12-12	21:44:35	output posterior mean decode result
+2022-12-12	21:47:05	output posterior mean decode result, DONE!
+----------------------------------------------------------------------------------------------------
+2022-12-12	21:47:05	integrate result of method topwords_seg_0.5_0.001
+2022-12-12	21:47:07	finish
