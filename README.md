@@ -1,5 +1,7 @@
 # TopWORDS-Poetry
 
+English | [简体中文](README.zh-CN.md)
+
 Research code, prepared data, and selected results for **TopWORDS-Poetry: Simultaneous Text Segmentation and Word Discovery for Classical Chinese Poetry via Bayesian Inference** (EMNLP 2023).
 
 This repository is a curated copy of the experiment files in `RDA/tang`. It preserves the original scripts and selected outputs; it is not a newly rerun experiment or an exact historical source-code snapshot.
