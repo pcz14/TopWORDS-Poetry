@@ -2,45 +2,104 @@
 
 English | [简体中文](README.zh-CN.md)
 
-Research code, prepared data, and selected results for **TopWORDS-Poetry: Simultaneous Text Segmentation and Word Discovery for Classical Chinese Poetry via Bayesian Inference** (EMNLP 2023).
+TopWORDS-Poetry is an unsupervised word discovery and text segmentation method for classical Chinese poetry in the TopWORDS family. It incorporates poetic meter and common segmentation patterns into Bayesian inference to identify poetry-specific words and segment verse without a predefined vocabulary or annotated training corpus. This repository provides the code, prepared metrical-poem data from the *Complete Tang Poetry*, and the main results from the EMNLP 2023 paper.
 
-This repository is a curated copy of the experiment files in `RDA/tang`. It preserves the original scripts and selected outputs; it is not a newly rerun experiment or an exact historical source-code snapshot.
+## Repository structure
 
-## Contents
+```text
+.
+├── TopwordsSegMix2/                  # TopWORDS-Poetry algorithm
+├── TopwordsSeg/                      # TopWORDS / TopWORDS-Seg baselines
+├── utils_seg.py                      # Data and segmentation utilities
+├── other_method.py                   # General-purpose segmentation baselines
+└── RDA/tang/
+    ├── poem_0_config.py              # Local path configuration
+    ├── poem_1_process.py             # Corpus preprocessing
+    ├── poem_2_get_sent_prior.py      # Segmentation-pattern priors
+    ├── poem_3_*.py                    # Model and baseline runs
+    ├── poem_5_utils.py               # Evaluation functions
+    ├── poem_5_evaluate_*.py          # Paper evaluation scripts
+    ├── data/                          # Metrical poems and manual annotations
+    └── output/20221215/              # Selected results for Table 1
+```
 
-| Path | Contents |
+## Data and paper results
+
+| Data file | Purpose |
 | --- | --- |
-| `TopwordsSegMix2/` | TopWORDS-Poetry algorithm used by the poetry experiment scripts. |
-| `TopwordsSeg/` | TopWORDS and TopWORDS-Seg baseline implementation. |
-| `RDA/tang/poem_*.py` | Data preparation, model runs, baseline generation, and evaluation scripts relevant to Table 1. |
-| `RDA/tang/data/` | Prepared Complete Tang Poetry corpus, sentence priors, candidate words, and the 1,000-poem manual segmentation sample. |
-| `RDA/tang/output/20221215/` | Selected Table 1 predictions and the original summary workbook. |
+| `RDA/tang/data/text_raw.txt` | Original poem texts from the *Complete Tang Poetry*. |
+| `RDA/tang/data/poem_data_57.json` | Filtered metrical poems with five or seven characters per line and four or eight lines per poem; includes poem IDs and line structure. |
+| `RDA/tang/data/modify_text57.txt` | Single-line model input, one poetry line per row. |
+| `RDA/tang/data/modify_text572.txt` | Double-line model input, two poetry lines per row. |
+| `RDA/tang/data/word_candidate.txt`, `word_candidate2.txt` | Candidate words generated from poetry segmentation patterns. |
+| `RDA/tang/data/sent_prior.pkl`, `sent_prior2.pkl` | Pattern priors for the single-line and double-line models. |
+| `RDA/tang/data/label2/sample_data1000.xlsx` | A stratified sample of 1,000 manually segmented poems for evaluation. |
 
-The main paper result is `RDA/tang/output/20221215/summary_result_2.xlsx`. Its two poetry rows correspond to:
+The full method comparison in Table 1 is saved in `RDA/tang/output/20221215/summary_result_2.xlsx`. The two TopWORDS-Poetry configurations are listed below. Each result directory includes `segmented_text.txt`, `word_dictionary.csv`, and a run log.
 
-| Paper row | Experiment directory | Setting |
+| Paper method | Result directory (under `output/20221215/`) | Input unit | Overall segmentation F1 |
+| --- | --- | --- | ---: |
+| TopWORDS-Poetry | `mix23_single/topwords_seg_0.5_0.001/` | One line | 84.48% |
+| TopWORDS-Poetry* | `mix23_double/topwords_seg_0.5_0.001/` | Two lines | 84.71% |
+
+| Comparison method | Saved predictions |
+| --- | --- |
+| TopWORDS | `tw_single/topwords_seg_inf_inf/segmented_text.txt` |
+| TopWORDS-Seg | `tw_seg/topwords_seg_1e-05_0.1/segmented_text.txt` |
+| LTP, StanfordNLP, THULAC, PKUSEG, Jieba, RandomPattern, SelectPattern, ChatGPT | Corresponding `.txt` files in `other_method/seg_result/` |
+
+## Running and reproducing results
+
+Run the following commands from the repository root. A Python virtual environment is recommended. The core code requires NumPy, pandas, SciPy, NLTK, tqdm, and openpyxl. Regenerating the comparison methods also requires the corresponding segmentation packages.
+
+```bash
+python -m venv .venv
+# Linux / macOS: source .venv/bin/activate
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install numpy pandas scipy nltk tqdm openpyxl
+```
+
+The prepared inputs are included, so the two Poetry configurations can be rerun starting from model estimation. First, set `work_dir` in `RDA/tang/poem_0_config.py` to the absolute path of `RDA/tang` in your checkout; the evaluation code uses this configuration to locate the data. The historical scripts contain absolute paths and parameter sweeps. Before running them, update the two scripts according to the table below so each runs only `kappa_d=0.5` and `kappa_s=0.001` and writes to a new `output/reproduced/` directory.
+
+| Setting | Single-line: `poem_3_topwords_seg_mix2_single_server1212.py` | Double-line: `poem_3_topwords_seg_mix2_double_server1212.py` |
 | --- | --- | --- |
-| TopWORDS-Poetry | `mix23_single/topwords_seg_0.5_0.001/` | One poetry line at a time; `kappa_d=0.5`, `kappa_s=0.001`. |
-| TopWORDS-Poetry* | `mix23_double/topwords_seg_0.5_0.001/` | Two poetry lines at a time; same `kappa` values. |
+| `work_dir` | Absolute path to the repository root | Absolute path to the repository root |
+| `output_dir` | `join(work_dir, 'RDA', 'tang', 'output', 'reproduced')` | Same as left |
+| `filedir` | `join(output_dir, 'mix23_single')` | `join(output_dir, 'mix23_double')` |
+| Input and prior | `modify_text57.txt`, `sent_prior.pkl` | `modify_text572.txt`, `sent_prior2.pkl` |
+| `protected_prior_words_dir` | `word_candidate.txt` (as recorded in the saved single-line log) | `word_candidate.txt` |
+| `sent_mode` | Default value `1` | `2` |
+| Parameter loops | `for kappa_d in [0.5]`, `for kappa_s in [0.001]` | Same as left |
+| Create output directory | Add `os.makedirs(filedir, exist_ok=True)` before calling `topwords_seg(...)` | Same as left |
 
-The workbook also contains the LTP, StanfordNLP, THULAC, PKUSEG, Jieba, TopWORDS, TopWORDS-Seg, RandomPattern, SelectPattern, and ChatGPT comparisons. The included `segmented_text.txt` files and baseline text files are the selected predictions. `word_dictionary.csv` is retained for the word discovery results. Full parameter sweeps, model pickle files, exploratory outputs, slide decks, and older code versions are omitted.
+The original double-line script names its `filedir` `mix23_double2`; change it to `mix23_double` as shown above. The original single-line script uses `word_candidate2.txt`, while the saved run log records `word_candidate.txt`. Then run:
 
-## Data
+```bash
+python RDA/tang/poem_3_topwords_seg_mix2_single_server1212.py
+python RDA/tang/poem_3_topwords_seg_mix2_double_server1212.py
+```
 
-`RDA/tang/data/text_raw.txt` is the source corpus used by the original preparation script. `poem_data_57.json` is the filtered metrical-poem collection used by evaluation; `modify_text57.txt` and `modify_text572.txt` are the one-line and two-line model inputs. `label2/sample_data1000.xlsx` contains the manual evaluation sample. `word_candidate.txt`, `word_candidate2.txt`, `sent_prior.pkl`, and `sent_prior2.pkl` are prepared inputs used by the experiment scripts.
+The new segmentation and dictionary results will be in `RDA/tang/output/reproduced/mix23_single/topwords_seg_0.5_0.001/` and `RDA/tang/output/reproduced/mix23_double/topwords_seg_0.5_0.001/`, respectively. Each run estimates a model on the full corpus; the original scripts use 10 processes by default.
 
-The paper reports 34,227 metrical poems, while the preserved `poem_data_57.json` contains 34,228 records. This one-record difference has not been resolved. The evaluation sample workbook has 1,000 data rows. No third-party CBDB source package or external dictionaries are redistributed here; the original preprocessing script references those sources and cannot regenerate every prepared input from this repository alone.
+Evaluate the newly generated segmentation against the 1,000 manually annotated poems:
 
-## Code and reproducibility
+```bash
+python -c "import json
+from pathlib import Path
+import pandas as pd
+from RDA.tang.poem_5_utils import get_seg_idx_and_result_with_type, get_result
+data = Path('RDA/tang/data')
+output = Path('RDA/tang/output/reproduced')
+poems = json.loads((data / 'poem_data_57.json').read_text(encoding='utf-8'))
+labels = pd.read_excel(data / 'label2/sample_data1000.xlsx')
+indices, segments, _, _ = get_seg_idx_and_result_with_type(labels, poems)
+for name, mode in [('mix23_single', 1), ('mix23_double', 2)]:
+    path = output / name / 'topwords_seg_0.5_0.001/segmented_text.txt'
+    print(name, get_result(path, indices, segments, mode=mode))"
+```
 
-The experiment scripts import `TopwordsSegMix2.TopwordsSeg.topwords_seg`; the evaluation scripts read `RDA/tang/data/label2/sample_data1000.xlsx` and `RDA/tang/output/20221215/`. The original `poem_0_config.py` and server scripts contain absolute paths from the original machines. Change those paths for a new checkout and run from the repository root so `RDA.tang` and the algorithm packages are importable.
-
-The core Python dependencies visible in the included code are NumPy, pandas, SciPy, tqdm, and an Excel engine such as openpyxl. Baseline-generation scripts additionally require their named segmentation packages. Dependency versions and random seeds for every historical run were not recorded in a lockfile.
-
-The output folder was assembled for paper evaluation: for example, the single-line result log inside `20221215/` records an original run path under `20221212/`. The included evaluation scripts document the methods and data paths, but the historical `summary_result_2.xlsx` cannot be guaranteed to regenerate byte-for-byte with the current source files. There is no Git history in the source project to prove that these files are identical to the versions used at experiment time.
+The command prints overall accuracy, precision, recall, and F1. To inspect the saved Table 1 values, open `RDA/tang/output/20221215/summary_result_2.xlsx`. The functions in `RDA/tang/poem_5_evaluate_label2_1_entity.py` cover the full word-discovery and multi-method comparison.
 
 ## Citation
 
 Changzai Pan et al. (2023). *TopWORDS-Poetry: Simultaneous Text Segmentation and Word Discovery for Classical Chinese Poetry via Bayesian Inference*. Proceedings of EMNLP 2023.
-
-Before publishing, confirm the redistribution rights for the corpus and manual annotations and choose a license for this repository. No license is granted by this README.
